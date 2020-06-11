@@ -8,10 +8,13 @@
 
 import UIKit
 
+var checker:Bool = false
+
 class ViewController: UIViewController {
     
     @IBOutlet weak var lab:UILabel!
     @IBOutlet weak var lab2:UILabel!
+    @IBOutlet weak var lab3:UILabel!
     
     @IBAction func PRINTSOME(sender: UIButton) {
         /*
@@ -22,28 +25,19 @@ class ViewController: UIViewController {
         let defaults = UserDefaults.standard
         
         hits += 1
-        defaults.set(hits, forKey: "Hits")
+        defaults.set(hits, forKey: "H")
         
         let temp = String(hits)
-        lab.text = "Hits: "+temp
+        lab.text = temp
         
         
         let date = Date()
+        days = String(describing: date)
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.timeStyle = DateFormatter.Style.none
-        dateFormatter.dateStyle = DateFormatter.Style.short
-        
-        let st = dateFormatter.string(from: date)
-        
-        let a = return_delta(new_date:st,old_date:days)
-        
-        if days != "" {
-            lab2.text = "Days: "+String(a)
-        }
-        
-        days = st
-        defaults.set(days, forKey: "Days")
+        lab2.text = "0 Days + 00:00:00"
+        checker = true
+
+        defaults.set(days, forKey: "T")
         
     }
 
@@ -53,135 +47,158 @@ class ViewController: UIViewController {
         let defaults = UserDefaults.standard
         
         //Get
-        hits = defaults.integer(forKey: "Hits")
-        let check = defaults.string(forKey: "Days") ?? nil
+        hits = defaults.integer(forKey: "H")
+        let check = defaults.string(forKey: "T") ?? nil
+        
         if (check != nil) {
             days = check!
         }
-        let temp = String(hits)
-        lab.text = "Hits: "+temp
         
-
-        if days != "" {
+        if days == "" {
             let date = Date()
-            let dateFormatter = DateFormatter()
-            dateFormatter.timeStyle = DateFormatter.Style.none
-            dateFormatter.dateStyle = DateFormatter.Style.short
-        
-            let st = dateFormatter.string(from: date)
-            let a = return_delta(new_date:st,old_date:days)
-            lab2.text = "Days: "+String(a)
+            days = String(describing: date)
         }
+        
+        
+        
+        let temp = String(hits)
+        lab.text = temp
+        
+    
+        let date = Date()
+        var t1 = 0
+        var date2 = Date()
+        for _ in days {
+            t1 += 1
+        }
+        if t1 >= 19 {
+            date2 = getDate(refr:days)
+        }
+        
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([Calendar.Component.second], from:date2, to:date)
+        
+        let ab = return_formatted(seconds:dateComponents.second!)
+        lab2.text = ab
+        increase_label(lab:lab2, oth:ab, lab2:lab3)
+        
+        
         
     }
 
 
 }
 
-func return_delta(new_date:String, old_date:String) -> Int {
+func getDate(refr:String) -> Date {
     
-    var arr:[Character] = []
-    var month1:Int = 0
-    var day1:Int = 0
-    var yr1:Int = 0
-    var total_days1:Int = 0
+    var dateComponents = DateComponents()
+    dateComponents.year = Int(String(refr.prefix(4)))!
+    let start = refr.index(refr.startIndex, offsetBy: 5)
+    let end = refr.index(refr.startIndex, offsetBy: 7)
+    let range = start..<end
+    let sub = refr[range]
     
-    for ch in new_date {
-        arr.append(ch)
-    }
+    dateComponents.month = Int(String(sub))!
     
-    var arr2:[Character] = []
-    var month2:Int = 0
-    var day2:Int = 0
-    var yr2:Int = 0
-    var total_days2:Int = 0
+    let start2 = refr.index(refr.startIndex, offsetBy: 8)
+    let end2 = refr.index(refr.startIndex, offsetBy: 10)
+    let range2 = start2..<end2
+    let sub2 = refr[range2]
     
-    for ch in old_date {
-        arr2.append(ch)
-    }
+    dateComponents.day = Int(String(sub2))!
     
-    //////////////
+    let start3 = refr.index(refr.startIndex, offsetBy: 11)
+    let end3 = refr.index(refr.startIndex, offsetBy: 13)
+    let range3 = start3..<end3
+    let sub3 = refr[range3]
     
-    for (key, ch) in arr.enumerated() {
+    dateComponents.hour = Int(String(sub3))!
+    
+    let start4 = refr.index(refr.startIndex, offsetBy: 14)
+    let end4 = refr.index(refr.startIndex, offsetBy: 16)
+    let range4 = start4..<end4
+    let sub4 = refr[range4]
+    
+    dateComponents.minute = Int(String(sub4))!
+    
+    let start5 = refr.index(refr.startIndex, offsetBy: 17)
+    let end5 = refr.index(refr.startIndex, offsetBy: 19)
+    let range5 = start5..<end5
+    let sub5 = refr[range5]
+    
+    dateComponents.second = Int(String(sub5))! - 3599
+    
+    let userCalendar = Calendar.current
+    let tiemp = userCalendar.date(from: dateComponents)
+
+    
+    return tiemp!
+}
+
+func increase_label(lab:UILabel, oth:String, lab2:UILabel) {
+    DispatchQueue.main.asyncAfter(deadline: .now()) {
         
-        if (key == 0 && arr[key+1] == "/") {
-            month1 = Int(String(ch))!
-        } else if (key == 0 && arr[key+2] == "/") {
-            month1 = Int("\(ch)\(arr[key+1])")!
+        let defaults = UserDefaults.standard
+        let date = Date()
+        var t1 = 0
+        var date2 = Date()
+        for _ in days {
+            t1 += 1
         }
-        if (month1 != 0 && day1 == 0 && ch == "/") {
-            if (arr[key+2] == "/") {
-                day1 = Int(String(arr[key+1]))!
+        if t1 >= 19 {
+            date2 = getDate(refr:days)
+        }
+        let calendar = Calendar.current
+        let dateComponents = calendar.dateComponents([Calendar.Component.second], from:date2, to:date)
+        
+        let new = return_formatted(seconds:dateComponents.second!)
+        
+        let check = defaults.integer(forKey: "Highestt")
+        
+        if ((dateComponents.second ?? nil != nil ? dateComponents.second! : 0) + 14400) > check + 14400 {
+            defaults.set( (dateComponents.second ?? nil != nil ? dateComponents.second! : 0), forKey: "Highestt")
+        }
+        
+        if checker == false {
+            lab.text = oth
+            if (dateComponents.second! + 14400) > check + 14400 {
+                lab2.text = oth
             } else {
-                day1 = Int("\(arr[key+1])\(arr[key+2])")!
+                if check == 0 {
+                    defaults.set( ((dateComponents.second ?? nil != nil ? dateComponents.second! : 0)), forKey: "Highestt")
+                    lab2.text = "0 Days + 00:00:00"
+                } else {
+                    lab2.text = return_formatted(seconds:(check))
+                }
             }
         }
-        if (key != 1 && day1 != 0 && ch == "/") {
-            yr1 = 2000 + Int("\(arr[key+1])\(arr[key+2])")!
-        }
-    }
-    var temp_days = 0
-    for a in stride(from:0, to:month1, by:1) {
-        
-        if (a == 2) {
-            temp_days += 28
-        }
-        if (a <= 7) && (a != 2) && (a % 2 != 0) {
-            temp_days += 31
-        } else if (a <= 7) && (a != 2) && (a % 2 == 0) {
-            temp_days += 30
-        }
-        if (a > 7) && (a != 2) && (a % 2 == 0) {
-            temp_days += 31
-        } else if (a > 7) && (a != 2) && (a % 2 != 0){
-            temp_days += 30
-        }
+        checker = false
+        increase_label(lab:lab, oth:new, lab2:lab2)
         
     }
+}
+
+func return_formatted(seconds:Int) -> String {
+    var secs = seconds
+    secs += 14400
+    var mins = 0
+    var hrs = 0
+    var days = 0
     
-    total_days1 = (yr1 * 365) + (temp_days) + (day1)
-    
-    // Same code, but modded for the second date and its variables
-    for (key, ch) in arr2.enumerated() {
-        
-        if (key == 0 && arr2[key+1] == "/") {
-            month2 = Int(String(ch))!
-        } else if (key == 0 && arr2[key+2] == "/") {
-            month2 = Int("\(ch)\(arr2[key+1])")!
-        }
-        if (month2 != 0 && day2 == 0 && ch == "/") {
-            if (arr2[key+2] == "/") {
-                day2 = Int(String(arr2[key+1]))!
-            } else {
-                day2 = Int("\(arr2[key+1])\(arr2[key+2])")!
-            }
-        }
-        if (key != 1 && day2 != 0 && ch == "/") {
-            yr2 = 2000 + Int("\(arr2[key+1])\(arr2[key+2])")!
-        }
+    while secs > 59 {
+        secs -= 60
+        mins += 1
     }
-    var temp_days2 = 0
-    for a in stride(from:0, to:month2, by:1) {
-        
-        if (a == 2) {
-            temp_days2 += 28
-        }
-        if (a <= 7) && (a != 2) && (a % 2 != 0) {
-            temp_days2 += 31
-        } else if (a <= 7) && (a != 2) && (a % 2 == 0) {
-            temp_days2 += 30
-        }
-        if (a > 7) && (a != 2) && (a % 2 == 0) {
-            temp_days2 += 31
-        } else if (a > 7) && (a != 2) && (a % 2 != 0){
-            temp_days2 += 30
-        }
-        
+    while mins > 59 {
+        mins -= 60
+        hrs += 1
+    }
+    while hrs > 23 {
+        hrs -= 24
+        days += 1
     }
     
-    total_days2 = (yr2 * 365) + (temp_days2) + (day2)
     
-    
-    return total_days1 - total_days2
+    return "\(days) Days + \(hrs < 10 ? "0"+String(hrs) : String(hrs)):\(mins < 10 ? "0"+String(mins) : String(mins)):\(secs < 10 ? "0"+String(secs) : String(secs))"
 }
 
